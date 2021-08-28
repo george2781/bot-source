@@ -174,7 +174,7 @@ async def eol(ctx):
     await ctx.send(embed=embed)
    
 @client.command()
-async def faq(ctx):
+async def source(ctx):
     embed=discord.Embed(title="Source code", description="https://github.com/george2781/bot-source/tree/main", color=discord.Color.dark_purple())
     embed.set_footer(text="It really is the end.")
     await ctx.send(embed=embed)
