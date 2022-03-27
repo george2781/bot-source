@@ -5,7 +5,32 @@ import os
 import random
 from discord.ext.commands import has_permissions, MissingPermissions
 
-client = commands.Bot(command_prefix='>', help_command=None)
+
+
+intents = discord.Intents.default()
+intents.members = True
+intents.guilds = True
+intents.messages = True
+#intents = discord.Intents(
+#    guilds=True,
+#    members=True,
+#    messages=True,
+#)
+
+
+client = commands.Bot(intents=intents, command_prefix='>', help_command=None)
+
+
+
+@client.event
+async def on_guild_join(guild):
+    for channel in guild.text_channels:
+        if channel.permissions_for(guild.me).send_messages:
+            embed=discord.Embed(title="Hello there!", color=discord.Color.dark_purple())
+            embed.add_field(name="Introduction message", value="Hello! This bot has been added to your server successfully! To get started with this bot, execute >help (just type it, no slash command bullshit). This message will delete itself after 1 minute.", inline=False)
+            embed.set_footer(text="Report bugs to george2781#2781")
+            await channel.send(embed=embed, delete_after=60)
+        break
 
 
 @client.event
@@ -13,9 +38,11 @@ async def on_ready():
     print("login SUCCESS! Logged in as: " + client.user.name + "\n")
     print('BOT user is now ACTIVE, please maintain if possible')
     await client.change_presence(
-        activity=discord.Streaming(name="Check out Loki!", url='https://www.twitch.tv/lokiicedcoffee',
-                                   activity="Check out My friend Loki's streams!"))
-
+        activity=discord.Streaming(name="I'm back (I guess)", url='https://github.com/george2781/bot-source',
+                                   activity="EOL bot returns"))
+    print("Guilds this bot is in")
+    for guild in client.guilds:
+        print(guild.name, guild.id)
 
 @client.event
 async def on_command_error(ctx, error):
@@ -39,6 +66,7 @@ async def on_member_join(member):
 @client.event
 async def on_member_remove(member):
     print(f'{member} has left/been kicked/banned from a server')
+
 
 
 @client.command()
@@ -131,9 +159,9 @@ async def help(ctx):
     embed.add_field(name="invite", value="Gives you the bot's invite link")
     embed.add_field(name="faq", value="Shows the FAQ prompt.")
     embed.add_field(name="source", value="Shows the source code.")
-    embed.add_field(name="eol", value="Why the bot is currently EOL")
+    embed.add_field(name="userinfo", value="Displays information about a user (or yourself)")
     embed.set_author(name=client.user.name, icon_url=client.user.avatar_url)
-    embed.set_footer(text="WARNING: This bot is discontinued, for more info execute >eol")
+    embed.set_footer(text="WARNING: This bot is discontinued-ish, see >faq")
 
     await ctx.send(embed=embed)
 
@@ -141,7 +169,7 @@ async def help(ctx):
 @client.command()
 async def invite(ctx):
     await ctx.send(
-        f'To invite the bot to a server, click the link here: https://discord.com/api/oauth2/authorize?client_id=743119025575428206&permissions=8&scope=bot')
+        f'You can no longer invite this bot to new servers, ask me to add it to your server if you want.')
 
 
 @client.command()
@@ -153,6 +181,7 @@ async def faq(ctx):
     embed.add_field(name="Q: Can you help me learn to code", value="No.", inline=False)
     embed.add_field(name="Q: What motivates you to host the bot", value="Mostly a feeling of satisfaction for coding the bot, this isn't easy to pick up for most people yet I managed to do it anyway, it gives me a sense of fulfilment really.", inline=False)
     embed.add_field(name="Q: Why make an FAQ command?", value="So you don't ask me repetetive questions 🙃", inline=False)
+    embed.add_field(name="Q: Isn't this bot dead?", value="Short answer: Yesn't. I revived the bot because its functions were useful to me, therefore the bot is being 'privated' I guess, only servers I want to have the bot in or those with it already in will have access to it and it's functions. I wouldn't call this a 'revival' really but there's no other short way to describe it.", inline=False)
     embed.set_footer(text="Now stop asking me")
     await ctx.send(embed=embed)
 
@@ -162,23 +191,41 @@ async def avatar(ctx, *,  avamember : discord.Member=None):
     userAvatarUrl = avamember.avatar_url
     await ctx.send(userAvatarUrl)
 
-@client.command()
-async def eol(ctx):
-    embed=discord.Embed(title="End of life", description="This bot is discontinued.", color=discord.Color.dark_purple())
-    embed.add_field(name="Indeed, I am ending this project", value="It was fun to run this bot, however discord is changing and in the near future I won't be able to properly develop this bot anymore. This is mostly due to the discontinuation of Discord.py, which was caused by slash commands becoming the ONLY type of command feasible to use. I suggest looking at the document that the discord.py dev made linked here. https://gist.github.com/Rapptz/4a2f62751b9600a31a0d3c78100287f1", inline=False)
-    embed.add_field(name="So this is goodbye?", value="Sadly, yes. Without a proper up-to-date library I don't have any way to code for this bot without radically changing the code, let alone the mandation of slash commands by April 2022.", inline=False)
-    embed.add_field(name="What does this mean for me?", value="For anyone who isn't a developer these changes will be trivial to you, for anyone else who doesn't use slash commands it'll mean you have to use them by April 2022 and for amyone else using discord.py as their library it'll mean you have to find a new one.", inline=False)
-    embed.add_field(name="Will you open source the bot/let me continue the bot?", value="I'll be open sourcing the bot to a command called 'source', when that command is released you are free to use it however you like.", inline=False)
-    embed.add_field(name="What now?", value="This marks the end of me developing this bot, it will continue to run until April 2022 when it will eventually crash. I will not revive this project.", inline=False)
-    embed.set_footer(text="It really is the end.")
-    await ctx.send(embed=embed)
    
 @client.command()
 async def source(ctx):
     embed=discord.Embed(title="Source code", description="https://github.com/george2781/bot-source/tree/main", color=discord.Color.dark_purple())
-    embed.set_footer(text="It really is the end.")
+    embed.set_footer(text="Open source ftw")
     await ctx.send(embed=embed)
 
+@client.command()
+async def userinfo(ctx, *, user: discord.Member = None):
+    if isinstance(ctx.channel, discord.DMChannel):
+        return
+    if user is None:
+        user = ctx.author      
+    date_format = "%a, %d %b %Y %I:%M %p"
+    embed = discord.Embed(color=discord.Color.dark_purple(), description=user.mention)
+    embed.set_author(name=str(user), icon_url=user.avatar_url)
+    embed.set_thumbnail(url=user.avatar_url)
+    embed.add_field(name="Joined", value=user.joined_at.strftime(date_format))
+    members = sorted(ctx.guild.members, key=lambda m: m.joined_at)
+    embed.add_field(name="Join position", value=str(members.index(user)+1))
+    embed.add_field(name="Registered", value=user.created_at.strftime(date_format))
+    if len(user.roles) > 1:
+        role_string = ' '.join([r.mention for r in user.roles][1:])
+        embed.add_field(name="Roles [{}]".format(len(user.roles)-1), value=role_string, inline=False)
+    perm_string = ', '.join([str(p[0]).replace("_", " ").title() for p in user.guild_permissions if p[1]])
+    embed.add_field(name="Guild permissions", value=perm_string, inline=False)
+    embed.set_footer(text='ID: ' + str(user.id))
+    await ctx.send(embed=embed)
     
+@client.command()
+async def showguilds(ctx):
+    embed = discord.Embed(color=discord.Color.dark_purple(), description="Guilds with this bot in them.")
+    for guild in client.guilds:
+#        message += f"{guild.name}\n"
+        embed.add_field(name=f"{guild.name}\n", value=str(guild.id), inline=False)
+    await ctx.send(embed=embed)
     
-client.run('bot token goes here')
+client.run('token')
