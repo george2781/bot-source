@@ -40,9 +40,11 @@ async def on_ready():
     await client.change_presence(
         activity=discord.Streaming(name="I'm back (I guess)", url='https://github.com/george2781/bot-source',
                                    activity="EOL bot returns"))
-    print("Guilds this bot is in")
+    print("Servers this bot is in:")
     for guild in client.guilds:
         print(guild.name, guild.id)
+        
+
 
 @client.event
 async def on_command_error(ctx, error):
@@ -160,6 +162,7 @@ async def help(ctx):
     embed.add_field(name="faq", value="Shows the FAQ prompt.")
     embed.add_field(name="source", value="Shows the source code.")
     embed.add_field(name="userinfo", value="Displays information about a user (or yourself)")
+    embed.add_field(name="showguilds", value="Shows the guilds (servers) this bot is in")
     embed.set_author(name=client.user.name, icon_url=client.user.avatar_url)
     embed.set_footer(text="WARNING: This bot is discontinued-ish, see >faq")
 
@@ -227,5 +230,12 @@ async def showguilds(ctx):
 #        message += f"{guild.name}\n"
         embed.add_field(name=f"{guild.name}\n", value=str(guild.id), inline=False)
     await ctx.send(embed=embed)
+    
+    
+    
+    
+    
+
+    
     
 client.run('token')
